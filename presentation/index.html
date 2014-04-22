@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Javascript Generators</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; font-size:200%}
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .red{ color:red }
+      .blue{ color:blue }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# Javascript Generators
+## BogotaJS  -  04/2014
+### by [@kuryaki](https://twitter.com/kuryaki)
+
+---
+name: agenda
+
+# Agenda
+
+1. Requeriments
+2. What are Generators
+3. What are Thunks
+4. How it helps with callback hell
+5. Notes
+
+---
+name: requeriments
+
+# Requeriments
+
+- Node (v 0.11.*)
+
+--
+
+- _--harmony_ flag
+
+--
+
+- As part of ES6 it is still not supported by default in all browsers or NodeJS, however
+its supported by all harmony branches (Chrome, Mozilla, Node)
+
+---
+name: generators-1
+
+# Generators
+
+Generators are functions which can be exited and later re-entered. Their context
+(variable bindings) will be saved across
+re-entrances
+
+```javascript
+ function* generator(){
+   yield 1;
+   yield 2;
+ }
+
+```
+
+__yield__ is a special keyword which emits a new item from the generator
+
+---
+name: generators-2
+
+# Generators
+
+We can use __next()__ to get the values from a generator. Once we reach the end
+of the iterator, the returned object will contain __done: true__
+
+```javascript
+var a = generator();
+a.next();
+// { value: 1, done: false }
+a.next();
+// { value: 2, done: false }
+a.next();
+//{ value: undefined, done: true }
+a.next();
+//Error: Generator has already finished
+
+```
+
+Any data type can be yielded, including functions, numbers, arrays, and objects
+
+---
+
+name: generators-3
+
+# Generators
+
+Generators actually suspend code execution, so you can _start_ and _stop_ the
+execution of code within a function
+
+```javascript
+function* mantra(){
+  console.log('Om');
+  yield null;
+  console.log('Namah');
+  yield null;
+  console.log('Shivaya');
+}
+
+```
+
+---
+
+name: generators-4
+
+# Generators
+
+Which actually means that you gain some control over Javascript asynchronous
+nature
+
+```javascript
+var m = mantra();
+function next(){
+  if (m.next().done) return;
+  setTimeout(next, 500);
+}
+next();
+```
+
+---
+
+name: send
+
+# Send
+
+you can send values to a generator by giving next() a parameter, in which case the
+yield statement actually returns a value
+
+```javascript
+function* sum(x){
+    var y = yield null;
+    return x + y
+}
+
+var s = sum(5);
+s.next(3) //{ value: null, done: false }
+s.next(5) //{ value: 10, done: true }
+```
+
+---
+
+# Callback .red[Hell]
+
+
+```javascript
+fs.readFile('template.html',
+  function(err, content){
+    fs.readFile('markdown.md',
+      function(err, markdown){
+        resp.end(template(content,
+          markdown(String(markdown))));
+      }
+    );
+  }
+);
+```
+
+---
+
+# Thunks
+
+A partially evaluated function which accepts a single callback as the argument
+
+```javascript
+function readFileThunk(callback) {
+  fs.readFile('myfile.md', callback);
+}
+```
+
+---
+# Co - _npm install co_
+
+Any data type can be yielded, including __functions__ (the thunk)
+
+```javascript
+co(function* () {
+  var file = yield readFileThunk;
+  console.log(file);
+});
+```
+
+---
+
+# Co - somehow like this
+
+Uses thunks and generators to create applications without callbacks
+
+```javascript
+function co(generator) {
+  var gen = generator();
+  function nextItem(err, result) {
+    var item = gen.next(result);
+    if (!item.done) {
+      item.value(nextItem);
+    }
+  }
+  nextItem();
+}
+```
+---
+
+# Generators .blue[Heaven]
+
+```javascript
+try{
+  var tmp = yield readFile('t.html');
+  var md = yield readFile('file.md');
+  resp.end(
+    template(tmp, markdown(String(md)))
+  );
+}catch(e){
+  resp.end(e.message);
+}
+```
+
+---
+
+# Notes
+
+- There are other ways to solve [Callback hell](http://strongloop.com/strongblog/node-js-callback-hell-promises-generators/) like promises or _async_ libraries
+- [Thunks](https://en.wikipedia.org/wiki/Thunk) is a programming pattern
+- There are modules that help [thunkify](https://github.com/visionmedia/node-thunkify) functions
+- There is already a [web framework](http://koajs.com/) built on top of _Co_
+
+---
+class: center, middle
+
+.center[![Twnel Logo](twnel.png)]
+
+
+### [david@twnel.com](mailto:david@twnel.com)
+
+
+    </textarea>
+    <script src="http://gnab.github.io/remark/downloads/remark-latest.min.js" type="text/javascript">
+    </script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+This is a presentation/working set to show how to work with generators,
+presented at BogotaJS 22/04/14,
+
+1. Requeriments
+  - Node v0.11
+  - --harmony flag
+
+2. What are Generators
+  - Explanation
+  - Examples
+
+3. What are Thunks
+  - Explanation
+  - Examples
+
+4. How it helps with callback hell
+  - Explanation
+  - Examples
+
+5. Notes
+  - Some of this can be solved with promises (q), other 3rd party librarys (async)
+    but this reads better
+  -
